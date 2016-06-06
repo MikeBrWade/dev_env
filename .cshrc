@@ -12,7 +12,10 @@ source /proj/fswcore/env/pyam.cshrc
 setenv timecontroller_geometry 80x24+1550+0
 setenv TERM xterm-256color
 setenv LS_COLORS "di=37:fi=00"
-setenv LD_LIBRARY_PATH /home/mwade/lib:$LD_LIBRARY_PATH
+
+if($?LD_LIBRARY_PATH) then
+    setenv LD_LIBRARY_PATH /home/mwade/lib:$LD_LIBRARY_PATH
+endif
 # ============================================================================
 #                               GENERAL PURPOSE 
 # ============================================================================
