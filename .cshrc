@@ -35,6 +35,7 @@ alias hgr 'history | grep \!:1'
 alias vim vim74
 alias sshx 'ssh -XY mwade@\!:1'
 alias xclip '/home/mwade/bin/xclip'
+alias test 'ls'
 
 # ============================================================================
 #                                 TMUX
