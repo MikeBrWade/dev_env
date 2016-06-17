@@ -28,7 +28,7 @@ command! Filename :put =expand('%:p')
 "map ^A g0
 "imap ^A ^Og0
 set hlsearch
-
+set whichwrap+=<,>,h,l,[,]
 
 "------------------------------------------------------------------------------
 "                               Syntax Highlighting

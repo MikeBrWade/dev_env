@@ -7,7 +7,7 @@ let g:loaded_nerdtree_ui_glue_autoload = 1
 function! nerdtree#ui_glue#createDefaultBindings()
     let s = '<SNR>' . s:SID() . '_'
 
-    call NERDTreeAddKeyMap({ 'key': '<MiddleRelease>', 'scope': "all", 'callback': s."handleMiddleMouse" })
+    "call NERDTreeAddKeyMap({ 'key': '<MiddleRelease>', 'scope': "all", 'callback': s."handleMiddleMouse" })
     call NERDTreeAddKeyMap({ 'key': '<LeftRelease>', 'scope': "all", 'callback': s."handleLeftClick" })
     call NERDTreeAddKeyMap({ 'key': '<2-LeftMouse>', 'scope': "DirNode", 'callback': s."activateDirNode" })
     call NERDTreeAddKeyMap({ 'key': '<2-LeftMouse>', 'scope': "FileNode", 'callback': s."activateFileNode" })
@@ -343,7 +343,7 @@ function! s:handleMiddleMouse()
     if curNode.path.isDirectory
         "call nerdtree#openExplorer(curNode)
     else
-        call curNode.open({'where': 'h'})
+        "call curNode.open({'where': 'h'})
     endif
 endfunction
 

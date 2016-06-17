@@ -12,7 +12,6 @@ source /proj/fswcore/env/pyam.cshrc
 setenv timecontroller_geometry 80x24+1550+0
 setenv TERM xterm-256color
 setenv LS_COLORS "di=37:fi=00"
-
 if($?LD_LIBRARY_PATH) then
     setenv LD_LIBRARY_PATH /home/mwade/lib:$LD_LIBRARY_PATH
 endif
@@ -25,7 +24,7 @@ alias rmdir 'rm -rf'
 alias fsys_mounted 'mount | column -t'
 alias ascii 'man ascii'
 alias grep 'grep --color=always'
-alias gr 'grep -ERsHn \!:1 \!:2 | grep -v .svn'
+alias gr 'grep -IERsHn \!:1 \!:2 | grep -v .svn'
 alias fs 'find . -path "*/.svn" -prune -o -print0 | xargs -0 grep -EsHn --color=always \!:1'
 alias r 'reset'
 alias c 'clear'
@@ -38,7 +37,18 @@ alias hgr 'history | grep \!:1'
 alias vim vim74
 alias sshx 'ssh -XY mwade@\!:1'
 alias xclip '/home/mwade/bin/xclip'
-alias test 'ls'
+alias pdf 'evince'
+alias calc 'gcalctool&'
+alias mountcd 'mount -o loop \!:1 \!:2'
+alias isoread '/home/mwade/_scripts/isoread.sh'
+alias extractcd 'isoread -i \!:1 -o \!:2'
+alias psuser 'ps -U \!:1 -u \!:1 u | grep -v "ps -U"'
+
+# ============================================================================
+#                                 GIT
+# ============================================================================
+alias gittree 'git log --oneline --graph --color --all --decorate'
+alias gitk '~/_scripts/gitk'
 
 # ============================================================================
 #                                 TMUX
@@ -72,9 +82,13 @@ alias vyam 'vim ../YAM.config'
 # ============================================================================
 #                              FSYS NAVIGATION 
 # ============================================================================
-alias lll 'ls -lha --color=tty'
-alias ll 'ls -lah --color=tty'
-alias ls 'ls --color=tty'
+alias ls 'ls -h --color=tty'
+alias lll 'ls -lha'
+alias ll 'ls -lah'
+alias ltr 'ls -ltr'
+alias lrt 'ls -ltr'
+alias lstr 'ls -ltr'
+alias lsrt 'ls -ltr'
 alias cll 'clear;pwd;ll'
 alias rll 'reset;pwd;ll'
 alias cd. 'cd ../'
@@ -82,12 +96,12 @@ alias cd.. 'cd ../../'
 alias cd... 'cd ../../../'
 alias cd.... 'cd ../../../../'
 alias tarx 'tar -xvf'
-alias tarc 'tar -cvf'
+alias tarc 'tar -czvf'
 alias ff 'find \!:2 -type f -name \!:1'
 alias grsymppc 'objdumpppc -T \!:1 | grep \!:2'
 alias ncdu '/home/mwade/bin/ncdu'
 
-# ========================a====================================================
+# ============================================================================
 #                               CORE DEV TOOLS 
 # ============================================================================
 alias coredev '/home/mwade/_scripts/launch_dev.sh \!:*'
@@ -108,7 +122,7 @@ alias sizeobj   'r ; gsize -all -zero ../obj/\!:1\-\!:2\-integrity-11.4.2/\!:3/*
 alias sizestats 'p ~/_scripts/check_size_stats.py'
 alias sizesinobj 'gnm -defined_only \!:1 | sort -r -k 3 -n -t "|" | head -n \!:2'
 alias sbstoxml 'p /proj/fswcore/fsw/dev/cgjones/dict_gen/sbs_to_xml.py pwr_config/pwr_config_ac_sbs.c ../xml/smap/current/mm_channel.xml'
-alias grobjs 'find ../obj/flight-*-integrity-11.4.2/*/* -type f -name "*.o" -print0 | xargs -0 objdumpppc -t | grep -E "elf32|\!:2"'
+alias grobjs 'find ../obj/flight-*-integrity-11.4.2/*/* -type f -name "*.o" -print0 | xargs -0 objdumpppc -t | grep -E "elf32|\!:1"'
 alias telapc 'telnet corefsw-apc'
 alias apcon '~/_scripts/apc_state.sh | grep -A 2 CDH; ~/_scripts/apc_cdh_on.sh | grep -E "Immediate On|CDH"; ~/_scripts/apc_probe_on.sh | grep -E "Immediate On|probe"; echo ""; ~/_scripts/apc_state.sh | grep -A 2 CDH'
 
