@@ -29,6 +29,7 @@ command! Filename :put =expand('%:p')
 "imap ^A ^Og0
 set hlsearch
 set whichwrap+=<,>,h,l,[,]
+set splitright
 
 "------------------------------------------------------------------------------
 "                               Syntax Highlighting
@@ -43,11 +44,16 @@ autocmd BufRead,BufNewFile *.gpj set filetype=gpj
 color darkbone 
 set background=dark
 highlight Search     ctermfg=Black      ctermbg=Red     cterm=NONE
+highlight String ctermfg=Red
 
 "------------------------------------------------------------------------------
 "                               Auto Completion
 "------------------------------------------------------------------------------
 inoremap <NUL> <C-x><C-]>
+imap <C-]> <Esc><C-]>
+nmap <C-z> <C-t>
+vmap <C-z> <Esc><C-t>
+imap <C-z> <Esc><C-t>
 filetype plugin on
 set omnifunc=syntaxcomplete#Complete
 " --------------------
@@ -95,8 +101,7 @@ let OmniCpp_SelectFirstItem = 0
 augroup GoAwayPreviewWindow
 autocmd! InsertLeave * wincmd z
 augroup end
-"------------------------------------------------------------------------------
-"                               Block Editing
+
 "------------------------------------------------------------------------------
 "                               Block Editing
 "------------------------------------------------------------------------------

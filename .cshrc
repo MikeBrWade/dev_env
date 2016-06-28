@@ -167,9 +167,23 @@ alias llwstsgds 'll /tmp/tests.mwade/wsts-gds.results/'
 alias clean 'make clean_wsts;make clean_flight'
 alias cleansb 'rm -rf ../lib/;rm -rf ../obj/;rm -rf ../dep; rm -rf ../hash; rm -rf ../include;rm -rf ../json;cd fsw;clean;cd ..'
 alias mev '/nfs/apps/ghs-multi-6.1.6/mevgui'
-alias fmake 'r;time ~/bin/ctags --python-kinds=+cfmvi --c-kinds=+cdefgmnstuv -R;cd fsw;clean;time make;cd.'
-alias pmake 'r;time ~/bin/ctags --python-kinds=+cfmvi --c-kinds=+cdefgmnstuv -R;cd fsw;time make;cd.'
+alias ctagclean 'rm tags tags.src tags.kernel'
+# ctags  timing: src    [ 4.0 sec clean,  1.8 sec delta]
+# catgs  timing: kernel [21.2 sec clean, 14.2 sec delta]
+# cscope timing: src    [ 2.4 sec clean,  0.9 sec delta]
+# cscope timing: kernel [11.8 sec clean,  3.7 sec delta]
+alias ctagsrc 'time ~/bin/ctags --python-kinds=+cfmvi --c-kinds=+cdefgmnstuv -R -f tags.src ./'
+alias ctagkernel 'time ~/bin/ctags --python-kinds=+cfmvi --c-kinds=+cdefgmnstuv -R -f tags.kernel ~/dev/ghs-integrity-11.4.2_full-src/'
+alias ctagmerge 'rm tags;cat tags.src tags.kernel > tags'
+alias cscopeclean 'rm cscope.*'
+alias cscopesrc 'find . -name "*.c" -o -name "*.h" > cscope.files.src'
+alias cscopekernel 'find ~/dev/ghs-integrity-11.4.2_full-src/ -name "*.c" -o -name "*.h" > cscope.files.kernel'
+alias cscopemerge 'cat cscope.files.src cscope.files.kernel > cscope.files;time cscope -b -q -k'
 
+alias fmake 'r;ctagclean;ctagsrc;ctagkernel;ctagmerge;cscopeclean;cscopesrc;cscopekernel;cscopemerge;cd fsw;clean;time make;cd.'
+alias pmake 'r;ctagsrc;ctagmerge;cscopemerge;cd fsw;time make;cd.'
+alias pmake_kernel 'r;time tcsh -c "gbuild -parallel -top bae-rad750/default.gpj;gbuild -parallel -top sim800/default.gpj"'
+alias fmake_kernel 'r;time tcsh -c "gbuild -clean -parallel -top bae-rad750/default.gpj;gbuild -clean -parallel -top sim800/default.gpj;gbuild -parallel -top bae-rad750/default.gpj;gbuild -parallel -top sim800/default.gpj"'
 
 # ============================================================================
 #                            VNC / REMOTE ACCESS
