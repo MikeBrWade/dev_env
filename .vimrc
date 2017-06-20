@@ -4,9 +4,11 @@
 :set mouse=a
 map <ScrollWheelUp> <C-Y>
 map <ScrollWheelDown> <C-E>
-set relativenumber
+if v:version > 703
+    set relativenumber
+endif
 :set number
-:set tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab
+:set tabstop=4 softtabstop=4 expandtab shiftwidth=4 smarttab
 :set autoread
 let mapleader=","
 set clipboard=unnamed
@@ -22,6 +24,8 @@ nmap <F12> :w!<CR>
 vmap <F12> <Esc><F12>gv
 imap <F12> <Esc><F12>a
 command! Filename :put =expand('%:p')
+nmap <F11> :noh<CR>
+imap <F11> <Esc>:noh<CR>
 "map ^E $
 "imap ^E ^O$
 " home
@@ -30,6 +34,121 @@ command! Filename :put =expand('%:p')
 set hlsearch
 set whichwrap+=<,>,h,l,[,]
 set splitright
+set noswapfile
+inoremap <C-e> <Esc>A
+inoremap <C-a> <Esc>I
+imap <End> <Esc>A
+imap <Home> <Esc>I
+nmap <End> $
+nmap <Home> 0
+nmap <Esc>OF <End>
+nmap <Esc>OH <End>
+" Handle TERM quirks in vim
+"if $TERM =~ '^xterm-255color'
+"    set t_Co=256
+"nmap <Home> <Esc>0
+"imap <Esc>OH <Home>
+"nmap <Esc>OF <End>
+"imap <Esc>OF <End>
+"endif
+"------------------------------------------------------------------------------
+"                                 Hex Mode 
+"------------------------------------------------------------------------------
+nnoremap <C-H> :Hexmode<CR>
+inoremap <C-H> <Esc>:Hexmode<CR>
+vnoremap <C-H> :<C-U>Hexmode<CR>
+
+command! -bar Hexmode call ToggleHex()
+
+" helper function to toggle hex mode
+function! ToggleHex()
+  " hex mode should be considered a read-only operation
+  " save values for modified and read-only for restoration later,
+  " and clear the read-only flag for now
+  let l:modified=&mod
+  let l:oldreadonly=&readonly
+  let &readonly=0
+  let l:oldmodifiable=&modifiable
+  let &modifiable=1
+  if !exists("b:editHex") || !b:editHex
+    " save old options
+    let b:oldft=&ft
+    let b:oldbin=&bin
+    " set new options
+    setlocal binary " make sure it overrides any textwidth, etc.
+    silent :e " this will reload the file without trickeries 
+              "(DOS line endings will be shown entirely )
+    let &ft="xxd"
+    " set status
+    let b:editHex=1
+    " switch to hex editor
+    %!xxd
+  else
+    " restore old options
+    let &ft=b:oldft
+    if !b:oldbin
+      setlocal nobinary
+    endif
+    " set status
+    let b:editHex=0
+    " return to normal editing
+    %!xxd -r
+  endif
+  " restore values for modified and read only state
+  let &mod=l:modified
+  let &readonly=l:oldreadonly
+  let &modifiable=l:oldmodifiable
+endfunction
+
+" autocmds to automatically enter hex mode and handle file writes properly
+if has("autocmd")
+  " vim -b : edit binary using xxd-format!
+  augroup Binary
+    au!
+
+    " set binary option for all binary files before reading them
+    au BufReadPre *.bin,*.hex,*.mer setlocal binary
+
+    " if on a fresh read the buffer variable is already set, it's wrong
+    au BufReadPost *
+          \ if exists('b:editHex') && b:editHex |
+          \   let b:editHex = 0 |
+          \ endif
+
+    " convert to hex on startup for binary files automatically
+    au BufReadPost *
+          \ if &binary | Hexmode | endif
+
+    " When the text is freed, the next time the buffer is made active it will
+    " re-read the text and thus not match the correct mode, we will need to
+    " convert it again if the buffer is again loaded.
+    au BufUnload *
+          \ if getbufvar(expand("<afile>"), 'editHex') == 1 |
+          \   call setbufvar(expand("<afile>"), 'editHex', 0) |
+          \ endif
+
+    " before writing a file when editing in hex mode, convert back to non-hex
+    au BufWritePre *
+          \ if exists("b:editHex") && b:editHex && &binary |
+          \  let oldro=&ro | let &ro=0 |
+          \  let oldma=&ma | let &ma=1 |
+          \  silent exe "%!xxd -r" |
+          \  let &ma=oldma | let &ro=oldro |
+          \  unlet oldma | unlet oldro |
+          \ endif
+
+    " after writing a binary file, if we're in hex mode, restore hex mode
+    au BufWritePost *
+          \ if exists("b:editHex") && b:editHex && &binary |
+          \  let oldro=&ro | let &ro=0 |
+          \  let oldma=&ma | let &ma=1 |
+          \  silent exe "%!xxd" |
+          \  exe "set nomod" |
+          \  let &ma=oldma | let &ro=oldro |
+          \  unlet oldma | unlet oldro |
+          \ endif
+  augroup END
+endif
 
 "------------------------------------------------------------------------------
 "                               Syntax Highlighting
@@ -40,20 +159,21 @@ au BufNewFile,BufRead *.ut_linux set filetype=make
 au BufNewFile,BufRead *.fsw set filetype=make
 
 autocmd BufRead,BufNewFile *.gpj set filetype=gpj
+autocmd BufRead *.map set filetype=map
 
 color darkbone 
 set background=dark
 highlight Search     ctermfg=Black      ctermbg=Red     cterm=NONE
 highlight String ctermfg=Red
-
+"UpdateTypesFile
 "------------------------------------------------------------------------------
 "                               Auto Completion
 "------------------------------------------------------------------------------
 inoremap <NUL> <C-x><C-]>
 imap <C-]> <Esc><C-]>
-nmap <C-z> <C-t>
-vmap <C-z> <Esc><C-t>
-imap <C-z> <Esc><C-t>
+nmap <C-'> <C-t>
+vmap <C-'> <Esc><C-t>
+imap <C-'> <Esc><C-t>
 filetype plugin on
 set omnifunc=syntaxcomplete#Complete
 " --------------------
@@ -116,14 +236,23 @@ nmap <C-LeftMouse> <LeftMouse><C-V>
 vmap <C-LeftDrag> <LeftDrag>
 imap <C-LeftMouse> <LeftMouse><C-O><C-V>
 vmap <C-LeftMouse> <Esc><LeftMouse><C-V>
-
+"imap <S-V> <Esc><S-V>
+imap <C-v> <Right><Esc><C-v>
 "------------------------------------------------------------------------------
 "                                  Tab Control
 "------------------------------------------------------------------------------
+inoremap <C-Left> <Esc>:tabprevious<CR>
+inoremap <C-Right> <Esc>:tabnext<CR>
 nnoremap <C-Left> :tabprevious<CR>
 nnoremap <C-Right> :tabnext<CR>
-nnoremap <silent> <A-Left> :execute 'silent! tabmove ' . (tabpagenr()-2)<CR>
-nnoremap <silent> <A-Right> :execute 'silent! tabmove ' . tabpagenr()<CR>
+"inoremap <silent> <A-Left> <Esc>:execute 'silent! tabmove ' . (tabpagenr()-2)<CR>
+"inoremap <silent> <A-Right> <Esc>:execute 'silent! tabmove ' . tabpagenr()<CR>
+"nnoremap <silent> <A-Left> :execute 'silent! tabmove ' . (tabpagenr()-2)<CR>
+"nnoremap <silent> <A-Right> :execute 'silent! tabmove ' . tabpagenr()<CR>
+inoremap <silent> <A-Left> <Esc>:execute 'silent! tabm -1'<CR>
+inoremap <silent> <A-Right> <Esc>:execute 'silent! tabm +1'<CR>
+nnoremap <silent> <A-Left> :execute 'silent! tabm -1'<CR>
+nnoremap <silent> <A-Right> :execute 'silent! tabm +1'<CR>
 " Tab bar minimization
 let notabs = 0
 nnoremap <silent> <F7> :let notabs=!notabs<Bar>:if notabs<Bar>:tabo<Bar>:else<Bar>:tab ball<Bar>:tabn<Bar>:endif<CR>
@@ -138,8 +267,12 @@ map <F4> :execute 'vimgrep '.expand('<cword>').' '.expand('%') <Bar> :copen <Bar
 "Grep inside whole current path for word
 "map <F4> :execute 'vimgrep '.expand('<cword>').' '.expand('%:p:h')/* <Bar> :copen <Bar> :cc <CR>
 "Grep inside current folder for word
-map <F5> :execute "grep -IHsrnw  --color=never . -e " . expand("<cword>") . " "  <Bar> :copen <CR>
-map <F6> :execute "find . -path '*/.svn' -prune -o -print0" <Bar> "xargs -0 grep -ERsHn --color=always expand("<cword>")" <Bar> :copen <CR>
+map <F6> :execute "grep -IHsrnw  --color=never . -e " . expand("<cword>") . " "  <Bar> :copen <CR>
+"map <F6> :execute "find . -path '*/.svn' -prune -o -print0" <Bar> "xargs -0 grep -ERsHn --color=always expand("<cword>")" <Bar> :copen <CR>
+map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
+
+map <F5> :!pmake<CR>
+imap <F5> <ESC>:!pmake<CR>
 
 "------------------------------------------------------------------------------
 "                                    Folding
@@ -161,8 +294,8 @@ vnoremap <F9> zf
 map <F2> :NERDTreeToggle<CR>:wincmd w<CR>
 map <F3> :NERDTreeFind<CR>
 "au VimEnter *  NERDTree
-autocmd VimEnter * NERDTree
-autocmd VimEnter * wincmd w
+"autocmd VimEnter * NERDTree
+"autocmd VimEnter * wincmd w
 
 "autocmd TabEnter * NERDTreeMirror
 "autocmd TabEnter * wincmd w
@@ -233,6 +366,10 @@ com! Diffsvn call s:DiffWithSVNCheckedOut()
 "------------------------------------------------------------------------------
 "                              Number Toggle
 "------------------------------------------------------------------------------
+if v:version > 703
+    
+
+
 let g:loaded_numbertoggle = 1
 let g:insertmode = 0
 let g:focus = 1
@@ -337,4 +474,7 @@ if exists('g:NumberToggleTrigger')
   exec "nnoremap <silent> " . g:NumberToggleTrigger . " :call NumberToggle()<cr>"
 elseif g:UseNumberToggleTrigger
   nnoremap <silent> <C-m> :call NumberToggle()<cr>
+endif
+
+
 endif
